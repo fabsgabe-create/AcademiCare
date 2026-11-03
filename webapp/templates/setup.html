@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Buat Akun Pertama - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Buat Akun Pertama</h1><p>Akun ini dipakai untuk masuk ke aplikasi. Tidak ada akun atau password bawaan.</p></div></div>{% endblock %}
+{% block content %}
+{% if blocked %}
+<div class="card login solo">
+  <div class="callout warn" style="margin:0"><div><b>Pembuatan akun hanya dari komputer server</b>
+    Buka halaman ini dari komputer tempat aplikasi berjalan, atau jalankan <code>python main.py create-user NAMA</code> di sana.</div></div>
+</div>
+{% else %}
+<div class="card login solo">
+  <h2>Akun administrator</h2>
+  {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" autocomplete="off">
+    <label class="field">Nama lengkap
+      <input name="name" value="{{ form.name or '' }}" maxlength="60" placeholder="mis. Primayoga Ananda"></label>
+    <label class="field">Username
+      <input name="username" value="{{ form.username or '' }}" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_.\-]{3,32}"
+        autocapitalize="none" spellcheck="false" placeholder="3-32 karakter: huruf, angka, . _ -"></label>
+    <label class="field">Password
+      <input name="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Minimal 8 karakter"></label>
+    <label class="field">Ulangi password
+      <input name="password2" type="password" required minlength="8" maxlength="128" autocomplete="new-password"></label>
+    <button class="btn block" type="submit">Buat Akun &amp; Masuk</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

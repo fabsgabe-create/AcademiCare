@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Foto Mahasiswa - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Foto Mahasiswa</h1><p>Semua foto yang dikirim mahasiswa. Tinjau, masukkan ke data latih/uji, atau hapus.</p></div></div>{% endblock %}
+{% block content %}
+{% for cat, m in msgs %}<div class="{{ 'alert' if cat == 'err' else 'callout' }}" role="status">{{ m }}</div>{% endfor %}
+<div class="tabs"><a href="{{ url_for('data_mahasiswa') }}">Daftar mahasiswa</a><a class="on" href="{{ url_for('foto_mahasiswa') }}">Foto mahasiswa</a></div>
+<form class="card filter" method="get">
+  <label>Status <select name="status">
+    {% for v, t in [('semua', 'Semua'), ('baru', 'Menunggu tinjauan'), ('dipakai', 'Sudah dipakai')] %}<option value="{{ v }}" {{ 'selected' if status == v }}>{{ t }}</option>{% endfor %}</select></label>
+  <label>Label <select name="label"><option value="">Semua</option>
+    {% for c in classes %}<option value="{{ c }}" {{ 'selected' if label == c }}>{{ class_labels[c] }}</option>{% endfor %}</select></label>
+  <button class="btn" type="submit">Terapkan</button>
+  <span class="muted small">{{ total }} foto</span>
+</form>
+{% if items %}
+<div class="subs">
+  {% for k in items %}
+  <figure class="sub">
+    <a href="{{ url_for('hasil_kiriman', sid=k.id) }}" title="Lihat hasil deteksi"><img src="{{ url_for('kiriman_thumb', sid=k.id) }}" alt="Foto {{ k.name }}" loading="lazy"></a>
+    <figcaption class="small"><b>{{ k.name }}</b><br><a href="{{ url_for('mahasiswa_detail', nim=k.username) }}">{{ k.username }}</a><br>
+      <span class="muted">{{ k.time.replace('T', ' ') }} &middot; {{ class_labels[k.label] }}</span>
+      {% if k.status == 'dipakai' %}<br><span class="pill ok">Masuk {{ split_names[k.split] }} ({{ class_labels[k.used_label] }})</span>{% endif %}</figcaption>
+    {% if k.status != 'dipakai' %}
+    <form method="post" action="{{ url_for('mahasiswa_impor') }}" class="impor">
+      <input type="hidden" name="id" value="{{ k.id }}"><input type="hidden" name="kembali" value="foto">
+      <select name="label" aria-label="Kelas">{% for c in classes %}<option value="{{ c }}" {{ 'selected' if c == k.label }}>{{ class_labels[c] }}</option>{% endfor %}</select>
+      <select name="split" aria-label="Tujuan"><option value="train">Data latih</option><option value="test">Data uji</option></select>
+      <button class="btn" type="submit">Masukkan</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('kiriman_hapus') }}" onsubmit="return confirm('Hapus foto kiriman ini?')">
+      <input type="hidden" name="id" value="{{ k.id }}"><input type="hidden" name="kembali" value="foto"><button class="btn ghost" type="submit">Hapus</button></form>
+  </figure>
+  {% endfor %}
+</div>
+<div class="row" style="margin-top:16px;justify-content:space-between">
+  {% if offset > 0 %}<a class="btn ghost" href="{{ url_for('foto_mahasiswa', status=status, label=label, offset=[offset - 24, 0]|max) }}">&larr; Sebelumnya</a>{% else %}<span></span>{% endif %}
+  {% if offset + 24 < total %}<a class="btn ghost" href="{{ url_for('foto_mahasiswa', status=status, label=label, offset=offset + 24) }}">Berikutnya &rarr;</a>{% endif %}
+</div>
+{% else %}<div class="card"><p class="muted" style="margin:0">Belum ada foto yang cocok dengan filter ini.</p></div>{% endif %}
+{% endblock %}

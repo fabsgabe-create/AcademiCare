@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Riwayat - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Riwayat Hasil</h1><p>Hasil kuesioner dan prediksi yang tersimpan pada akun Anda. Riwayat bersifat permanen dan hanya dapat dikelola admin.</p></div></div>{% endblock %}
+{% block content %}
+<div class="card">
+  {% if items %}
+  <table class="rt">
+    <thead><tr><th>Waktu</th><th>Jenis</th><th>Hasil</th><th>Keterangan</th></tr></thead>
+    <tbody>{% for e in items %}
+      <tr><td data-label="Waktu">{{ e.time.replace('T', ' ') }}</td><td data-label="Jenis">{{ 'Kuesioner' if e.jenis == 'kuesioner' else 'Prediksi wajah' }}</td>
+        <td data-label="Hasil"><span class="pill" style="color:var(--c-{{ e.label }})">{{ class_labels[e.label] }}</span></td><td class="muted" data-label="Keterangan">{{ e.detail }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted" style="margin:0">Belum ada riwayat. Isi <a href="{{ url_for('questionnaire_page') }}">kuesioner</a> atau coba <a href="{{ url_for('predict_page') }}">prediksi</a>.</p>{% endif %}
+</div>
+{% endblock %}

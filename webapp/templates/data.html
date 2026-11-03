@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, stack %}
+{% block title %}Data - AcademiCare{% endblock %}
+{% block hero %}<div class="head">
+  <div><h1>Data</h1><p>Unggah data latih dan data uji, periksa hasilnya, atau ambil lewat kamera.</p></div>
+  <a class="btn ghost" href="{{ url_for('capture_page') }}">{{ icon('camera') }}Ambil dari kamera</a>
+</div>{% endblock %}
+{% block content %}
+<div class="grid">
+  <div class="card stat">
+    <div class="lab">Data latih</div><div class="val" id="n-train">{{ counts.train.values()|sum }}</div>
+    <div id="stack-train">{{ stack(counts.train, classes) }}</div>
+  </div>
+  <div class="card stat">
+    <div class="lab">Data uji</div><div class="val" id="n-test">{{ counts.test.values()|sum }}</div>
+    <div id="stack-test">{{ stack(counts.test, classes) }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Unggah citra</h2>
+  <p class="muted small">Bisa banyak file sekaligus (JPG/PNG, maks 10 MB per citra) atau satu/lebih ZIP berfolder kelas.</p>
+
+  <h3>1. Simpan sebagai</h3>
+  <div class="seg" role="radiogroup" aria-label="Tujuan">
+    <label><input type="radio" name="split" value="train" checked><span>Data latih</span></label>
+    <label><input type="radio" name="split" value="test"><span>Data uji</span></label>
+    <label><input type="radio" name="split" value="auto"><span>Ikuti folder ZIP</span></label>
+  </div>
+
+  <h3>2. Kelas <span class="muted" style="text-transform:none;letter-spacing:0">(untuk citra lepas; ZIP memakai nama folder)</span></h3>
+  <div class="chips" role="radiogroup" aria-label="Kelas">
+    {% for c in classes %}<label class="chip k-{{ c }}"><input type="radio" name="label" value="{{ c }}" {{ 'checked' if loop.first }}><span>{{ class_labels[c] }}</span></label>{% endfor %}
+  </div>
+
+  <h3>3. Pilih berkas</h3>
+  <label class="drop" id="drop" for="picker">
+    {{ icon('upload') }}
+    <b>Tarik &amp; lepas berkas di sini</b>
+    <span class="muted small">atau klik untuk memilih citra / ZIP</span>
+    <input id="picker" type="file" multiple accept=".jpg,.jpeg,.png,.zip,image/jpeg,image/png,application/zip">
+  </label>
+  <div class="files" id="files"></div>
+
+  <div class="row" style="margin-top:16px">
+    <button class="btn" id="send" type="button" disabled>Unggah</button>
+    <button class="btn ghost" id="reset" type="button" hidden>Kosongkan pilihan</button>
+  </div>
+  <div class="progress" id="prog" style="margin-top:14px" hidden><i></i></div>
+  <div class="result-box" id="report" hidden></div>
+
+  <details style="margin-top:16px">
+    <summary>Format ZIP yang dikenali</summary>
+<pre>dataset.zip
+├── train/            (atau latih/)   → data latih
+│   ├── normal/  ringan/  sedang/  berat/
+└── test/             (atau uji/)     → data uji
+    └── normal/  ringan/  sedang/  berat/</pre>
+    <p class="muted small" style="margin-top:10px">Tanpa folder train/test, semua masuk data latih. Nama folder kelas harus
+    <code>normal</code>, <code>ringan</code>, <code>sedang</code>, atau <code>berat</code>. Nama berkas diabaikan
+    (disimpan ulang dengan nama acak).</p>
+  </details>
+</div>
+
+<div class="card">
+  <div class="row between">
+    <div><h2>Galeri</h2><p class="muted small" style="margin:0">Periksa citra yang sudah diunggah. Hapus yang salah label.</p></div>
+    <div class="row">
+      <div class="seg" role="radiogroup" aria-label="Galeri tujuan">
+        <label><input type="radio" name="gsplit" value="train" checked><span>Latih</span></label>
+        <label><input type="radio" name="gsplit" value="test"><span>Uji</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="chips" style="margin-top:14px" role="radiogroup" aria-label="Galeri kelas">
+    {% for c in classes %}<label class="chip k-{{ c }}"><input type="radio" name="glabel" value="{{ c }}" {{ 'checked' if loop.first }}><span>{{ class_short[c] }} <b id="gc-{{ c }}"></b></span></label>{% endfor %}
+  </div>
+  <div class="gal" id="gal"></div>
+  <div class="empty" id="gal-empty" hidden>Belum ada citra di sini.</div>
+  <div class="row between" style="margin-top:14px">
+    <button class="btn ghost sm" id="more" type="button" hidden>Muat lebih banyak</button>
+    <button class="btn danger sm" id="clear" type="button">Hapus semua di kelas ini</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.INIT_COUNTS = {{ counts|tojson }};</script>
+<script src="{{ url_for('static', filename='js/data.js') }}"></script>
+{% endblock %}

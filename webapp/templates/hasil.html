@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Hasil Deteksi - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Hasil Deteksi</h1>
+  <p>{{ owner.name }} &middot; NIM {{ owner.username }} &middot; foto dikirim {{ sub.time.replace('T', ' ') }}</p></div>
+  <a class="btn ghost" href="{{ url_for('kirim') if user.role == 'mahasiswa' else url_for('mahasiswa_detail', nim=owner.username) }}">&larr; Kembali</a></div>{% endblock %}
+{% block content %}
+{% if baru %}<div class="callout" role="status"><div><b>Foto terkirim</b>Terima kasih. Foto Anda sudah diterima peneliti. Berikut hasil deteksinya.</div></div>{% endif %}
+{% if not model_ready %}
+<div class="callout warn"><div><b>Model belum dilatih</b>Kotak wajah sudah ditampilkan, tetapi tingkat stres baru bisa diprediksi setelah peneliti melatih model.</div></div>
+{% endif %}
+<div class="grid">
+  <div class="card">
+    <h2>Hasil prediksi model</h2>
+    {% if result.face_found and result.label %}
+      <div class="result" style="--cc:var(--c-{{ result.label }})">
+        <div class="big">{{ result.label_text }}</div>
+        <div class="muted">Keyakinan {{ '%.1f'|format(result.confidence * 100) }}%</div>
+        <p style="margin:8px 0 0">{{ result.description }}</p>
+      </div>
+      {% for c in classes %}
+      <div class="bar-row"><span>{{ class_labels[c] }}</span>
+        <div class="bar"><i class="bg-{{ c }}" style="width: {{ result.probabilities[c] * 100 }}%"></i></div>
+        <span class="num">{{ '%.1f'|format(result.probabilities[c] * 100) }}%</span></div>
+      {% endfor %}
+    {% elif result.face_found %}
+      <p class="muted" style="margin:10px 0 0">Wajah terdeteksi. Prediksi tingkat stres menunggu model dilatih.</p>
+    {% else %}
+      <div class="alert" style="margin-top:14px">Wajah tidak terdeteksi pada foto ini.</div>
+    {% endif %}
+
+    <h2 style="margin-top:22px">Label dari kuesioner</h2>
+    <div class="result" style="--cc:var(--c-{{ sub.label }});margin-top:8px"><div class="big">{{ class_labels[sub.label] }}</div>
+      <div class="muted">Dipakai sebagai label foto ini.</div></div>
+    {% if result.label %}
+      <p class="muted small" style="margin-top:10px">
+        {% if result.label == sub.label %}Prediksi model <b>sama</b> dengan label kuesioner.
+        {% else %}Prediksi model (<b>{{ class_labels[result.label] }}</b>) <b>berbeda</b> dari label kuesioner (<b>{{ class_labels[sub.label] }}</b>). Perbedaan seperti ini wajar; kuesioner tetap menjadi acuan.{% endif %}</p>
+    {% endif %}
+    <p class="muted small" style="margin-top:12px">Ini estimasi dari model dan bukan diagnosis. {{ disclaimer }}</p>
+  </div>
+  <div class="card">
+    <h2>Deteksi wajah</h2>
+    <img class="preview" src="{{ annotated }}" alt="Foto dengan kotak wajah dan label" style="margin-top:12px">
+    <p class="muted small" style="margin-top:10px">Kotak menunjukkan wajah yang dideteksi Haar Cascade, lalu dipotong dan diklasifikasikan SVM.</p>
+  </div>
+</div>
+{% endblock %}

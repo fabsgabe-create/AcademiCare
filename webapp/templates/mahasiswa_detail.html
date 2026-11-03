@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ s.name }} - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>{{ s.name }}</h1><p>NIM {{ s.username }}</p></div>
+  <a class="btn ghost" href="{{ url_for('data_mahasiswa') }}">&larr; Semua mahasiswa</a></div>{% endblock %}
+{% block content %}
+{% for cat, m in msgs %}<div class="{{ 'alert' if cat == 'err' else 'callout' }}" role="status">{{ m }}</div>{% endfor %}
+<div class="card">
+  <h2>Foto kiriman</h2>
+  {% if kiriman %}
+  <div class="subs">
+    {% for k in kiriman %}
+    <figure class="sub">
+      <a href="{{ url_for('hasil_kiriman', sid=k.id) }}" title="Lihat hasil deteksi"><img src="{{ url_for('kiriman_thumb', sid=k.id) }}" alt="Foto kiriman {{ k.time }}" loading="lazy"></a>
+      <figcaption class="small muted">{{ k.time.replace('T', ' ') }} &middot; label {{ class_labels[k.label] }}
+        {% if k.status == 'dipakai' %}<br><span class="pill ok">Masuk {{ split_names[k.split] }} ({{ class_labels[k.used_label] }})</span>{% endif %}</figcaption>
+      {% if k.status != 'dipakai' %}
+      <form method="post" action="{{ url_for('mahasiswa_impor') }}" class="impor">
+        <input type="hidden" name="id" value="{{ k.id }}">
+        <select name="label" aria-label="Kelas">{% for c in classes %}<option value="{{ c }}" {{ 'selected' if c == k.label }}>{{ class_labels[c] }}</option>{% endfor %}</select>
+        <select name="split" aria-label="Tujuan"><option value="train">Data latih</option><option value="test">Data uji</option></select>
+        <button class="btn" type="submit">Masukkan</button>
+      </form>
+      {% endif %}
+      <form method="post" action="{{ url_for('kiriman_hapus') }}" onsubmit="return confirm('Hapus foto kiriman ini?')">
+        <input type="hidden" name="id" value="{{ k.id }}"><button class="btn ghost" type="submit">Hapus kiriman</button></form>
+    </figure>
+    {% endfor %}
+  </div>
+  {% else %}<p class="muted" style="margin:8px 0 0">Belum ada foto kiriman.</p>{% endif %}
+</div>
+<div class="card" style="margin-top:18px">
+  <h2>Riwayat hasil</h2>
+  {% if items %}
+  <table class="rt"><thead><tr><th>Waktu</th><th>Jenis</th><th>Hasil</th><th>Keterangan</th></tr></thead><tbody>
+    {% for e in items %}<tr><td data-label="Waktu">{{ e.time.replace('T', ' ') }}</td><td data-label="Jenis">{{ 'Kuesioner' if e.jenis == 'kuesioner' else 'Prediksi wajah' }}</td>
+      <td data-label="Hasil">{{ class_labels[e.label] }}</td><td class="muted" data-label="Keterangan">{{ e.detail }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted" style="margin:8px 0 0">Belum ada riwayat.</p>{% endif %}
+</div>
+<div class="card" style="margin-top:18px">
+  <h2>Hapus data mahasiswa</h2>
+  <p class="muted small" style="margin:8px 0 12px">Hanya admin yang dapat menghapus. Foto yang sudah dimasukkan ke data latih/uji adalah salinan terpisah (tanpa identitas) dan
+    <b>tidak ikut terhapus</b>; hapus manual lewat menu Data bila perlu.</p>
+  <div class="row">
+    {% for apa, teks, konf in [('riwayat', 'Hapus riwayat hasil', 'Hapus seluruh riwayat hasil mahasiswa ini?'), ('foto', 'Hapus semua foto kiriman', 'Hapus semua foto kiriman mahasiswa ini?'), ('semua', 'Hapus riwayat + foto', 'Hapus riwayat dan foto (akun tetap ada)?'), ('akun', 'Hapus akun & semua data', 'Hapus AKUN beserta seluruh datanya? Tindakan ini tidak dapat dibatalkan.')] %}
+    <form method="post" action="{{ url_for('mahasiswa_hapus_data') }}" class="inline" onsubmit="return confirm('{{ konf }}')">
+      <input type="hidden" name="nim" value="{{ s.username }}"><input type="hidden" name="apa" value="{{ apa }}">
+      <button class="btn ghost" type="submit">{{ teks }}</button></form>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

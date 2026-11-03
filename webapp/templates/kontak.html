@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Kontak - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Kontak &amp; Bantuan</h1><p>Pengelola aplikasi dan panduan bila mengalami kendala.</p></div></div>{% endblock %}
+{% block content %}
+<div class="grid">
+  <section class="card">
+    <h2>{{ icon('user') }} Peneliti</h2>
+    <p style="margin:10px 0 2px"><b>{{ contact.name }}</b></p>
+    <p class="muted small" style="margin:0">{{ contact.program }}<br>{{ contact.university }}</p>
+    {% if contact.email %}<p style="margin:12px 0 0">{{ icon('mail') }} <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>{% endif %}
+  </section>
+  <section class="card" id="lupa-password">
+    <h2>{{ icon('lock') }} Lupa password</h2>
+    <p class="muted small" style="margin-top:8px"><b>Mahasiswa:</b> hubungi peneliti/admin; admin dapat mengatur ulang password Anda di menu Pengguna.</p>
+    <p class="muted small" style="margin-top:8px"><b>Admin:</b> password disimpan sebagai hash dan tidak bisa dilihat kembali. Atur ulang lewat perintah berikut di komputer server:</p>
+    <pre>python main.py set-password USERNAME</pre>
+    <p class="muted small" style="margin-top:10px">Akun baru dibuat dengan <code>python main.py create-user USERNAME</code>.</p>
+  </section>
+  <section class="card">
+    <h2>{{ icon('help') }} Kendala teknis</h2>
+    <ul class="muted small" style="padding-left:18px;margin:8px 0 0">
+      <li>Wajah tidak terdeteksi: gunakan citra frontal dengan pencahayaan merata.</li>
+      <li>Unggahan ditolak: pastikan berkas JPG/PNG yang valid, maks. 10 MB.</li>
+      <li>Kamera tidak menyala: izinkan akses kamera di browser (butuh localhost atau HTTPS).</li>
+    </ul>
+    <p class="small" style="margin:12px 0 0"><a href="{{ url_for('faq') }}">Lihat FAQ &rarr;</a></p>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Kamera - AcademiCare{% endblock %}
+{% block hero %}<div class="head">
+  <div><h1>Ambil Citra dari Kamera</h1>
+  <p>Jarak {{ dist }} cm, pencahayaan {{ lux }} lux, wajah frontal tanpa penghalang.</p></div>
+  <a class="btn ghost" href="{{ url_for('data_page') }}">Unggah file saja</a>
+</div>{% endblock %}
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <div class="cam-wrap">
+      <video id="video" class="preview" autoplay playsinline muted></video>
+      <div class="cam-off" id="camoff">Kamera belum aktif</div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button id="start" class="btn ghost" type="button">{{ icon('camera') }}Aktifkan kamera</button>
+      <button id="snap" class="btn" type="button" disabled>Simpan citra</button>
+    </div>
+    <p class="muted small" id="msg" style="margin:12px 0 0" aria-live="polite"></p>
+  </div>
+
+  <div class="card">
+    <label class="field">ID responden (anonim)
+      <input id="subject" value="{{ subject }}" maxlength="32" pattern="[A-Za-z0-9_-]{1,32}" placeholder="mis. R001" autocomplete="off"></label>
+
+    <h3 style="margin-top:4px">Simpan sebagai</h3>
+    <div class="seg" role="radiogroup" aria-label="Tujuan">
+      <label><input type="radio" name="split" value="train" {{ 'checked' if split != 'test' }}><span>Data latih</span></label>
+      <label><input type="radio" name="split" value="test" {{ 'checked' if split == 'test' }}><span>Data uji</span></label>
+    </div>
+
+    <h3>Kelas (sesuai hasil kuesioner)</h3>
+    <div class="chips" role="radiogroup" aria-label="Kelas">
+      {% for c in classes %}<label class="chip k-{{ c }}"><input type="radio" name="label" value="{{ c }}" {{ 'checked' if c == label }}><span>{{ class_labels[c] }}</span></label>{% endfor %}
+    </div>
+
+    <label class="check"><input id="consent" type="checkbox">
+      <span class="small">Responden telah memberi persetujuan (<i>informed consent</i>) atas pengambilan dan penggunaan citra wajah untuk penelitian.</span></label>
+    <p class="small"><a href="{{ url_for('questionnaire_page') }}">Belum mengisi kuesioner?</a></p>
+
+    <h3>Jumlah citra</h3>
+    <table id="counts"></table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>window.INIT_COUNTS = {{ counts|tojson }};</script>
+<script src="{{ url_for('static', filename='js/capture.js') }}"></script>{% endblock %}

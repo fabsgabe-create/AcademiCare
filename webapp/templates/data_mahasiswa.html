@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Data Mahasiswa - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Data Mahasiswa</h1><p>Hasil kuesioner, prediksi, dan foto kiriman mahasiswa yang terdaftar.</p></div>
+  <a class="btn ghost" href="{{ url_for('mahasiswa_csv') }}">Unduh CSV</a></div>{% endblock %}
+{% block content %}
+<div class="tabs"><a class="on" href="{{ url_for('data_mahasiswa') }}">Daftar mahasiswa</a><a href="{{ url_for('foto_mahasiswa') }}">Foto mahasiswa{% if n_new %} <span class="pill warn">{{ n_new }} baru</span>{% endif %}</a></div>
+{% if n_new %}<div class="callout"><div><b>{{ n_new }} foto menunggu tinjauan</b>Buka <a href="{{ url_for('foto_mahasiswa', status='baru') }}">Foto mahasiswa</a>, lalu masukkan foto ke data latih atau data uji sesuai labelnya.</div></div>{% endif %}
+<div class="card" style="overflow-x:auto">
+  {% if rows %}
+  <table class="rt">
+    <thead><tr><th>Nama</th><th>NIM</th><th>Kuesioner terakhir</th><th>Prediksi terakhir</th><th>Foto</th><th></th></tr></thead>
+    <tbody>{% for r in rows %}
+      <tr><td data-label="Nama">{{ r.name }}</td><td data-label="NIM">{{ r.username }}</td>
+        <td data-label="Kuesioner terakhir">{% if r.q %}{{ class_labels[r.q.label] }} <span class="muted small">({{ r.q.detail }})</span>{% else %}–{% endif %}</td>
+        <td data-label="Prediksi terakhir">{% if r.face %}{{ class_labels[r.face.label] }}{% else %}–{% endif %}</td>
+        <td data-label="Foto">{{ r.n_sub }}{% if r.n_new %} <span class="pill warn">{{ r.n_new }} baru</span>{% endif %}</td>
+        <td><a class="btn ghost" href="{{ url_for('mahasiswa_detail', nim=r.username) }}">Detail</a></td></tr>
+    {% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted" style="margin:0">Belum ada mahasiswa terdaftar. Mahasiswa mendaftar sendiri di halaman <b>Daftar</b>.</p>{% endif %}
+</div>
+{% endblock %}

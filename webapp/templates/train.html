@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, stack %}
+{% block title %}Latih Model - AcademiCare{% endblock %}
+{% block hero %}<div class="head">
+  <div><h1>Latih Model</h1><p>Pre-processing, deteksi wajah, lalu SVM RBF dengan Grid Search dan 5-fold cross-validation.</p></div>
+</div>{% endblock %}
+{% block content %}
+{% set n_train = counts.train.values()|sum %}{% set n_test = counts.test.values()|sum %}
+<div class="grid">
+  <div class="card stat"><div class="lab">Data latih</div><div class="val">{{ n_train }}</div>{{ stack(counts.train, classes) }}</div>
+  <div class="card stat"><div class="lab">Data uji</div><div class="val">{{ n_test }}</div>
+    {% if n_test %}{{ stack(counts.test, classes) }}{% else %}<div class="sub">Tidak ada. Data latih akan dibagi 80% latih / 20% uji (stratified).</div>{% endif %}</div>
+</div>
+
+{% if not n_train %}
+<div class="callout warn" style="margin-top:18px"><div><b>Belum ada data latih</b>Unggah citra dulu di menu <a href="{{ url_for('data_page') }}">Data</a>. Minimal 2 citra per kelas yang dipakai; disarankan puluhan per kelas.</div></div>
+{% endif %}
+
+<div class="card">
+  <h2>Mulai pelatihan</h2>
+  <p class="muted small">Pelatihan berjalan di server; halaman ini boleh ditutup lalu dibuka lagi.</p>
+  <label class="check"><input type="checkbox" id="cropped">
+    <span><b>Citra sudah berupa wajah</b><br><span class="muted small">Lewati deteksi Haar Cascade. Centang bila dataset berisi foto wajah yang sudah dipotong (mis. 48&times;48).</span></span></label>
+  <div class="row">
+    <button class="btn" id="start" type="button" {{ 'disabled' if not n_train }}>{{ icon('zap') }}Mulai latih</button>
+    <span class="muted small" id="state"></span>
+  </div>
+
+  <div id="panel" hidden style="margin-top:20px">
+    <div class="stages">
+      <div class="stage" data-s="preprocess"><b>1. Pre-processing</b>Grayscale, resize, blur, Haar Cascade</div>
+      <div class="stage" data-s="train"><b>2. Grid Search SVM</b>C &times; gamma, 5-fold CV</div>
+      <div class="stage" data-s="evaluate"><b>3. Evaluasi</b>Confusion matrix &amp; metrik</div>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="console" id="log" style="margin-top:14px" aria-live="polite"></div>
+  </div>
+
+  <div id="done" hidden style="margin-top:18px">
+    <div class="callout" style="margin:0 0 14px"><div><b id="done-title"></b><span id="done-sub"></span></div></div>
+    <a class="btn" href="{{ url_for('evaluation_page') }}">Lihat evaluasi lengkap</a>
+    <a class="btn ghost" href="{{ url_for('predict_page') }}">Coba prediksi</a>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.JOB = {{ job|tojson }};</script>
+<script src="{{ url_for('static', filename='js/train.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Kirim Foto - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Kirim Foto Penelitian</h1><p>Foto wajah Anda dikirim ke peneliti dan diberi label dari hasil kuesioner Anda.</p></div></div>{% endblock %}
+{% block content %}
+{% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+{% if ok %}<div class="callout" role="status"><div>{{ ok }}</div></div>{% endif %}
+<div class="grid">
+  <div class="card">
+    <h2>Unggah foto</h2>
+    {% if q %}
+    <p class="muted small" style="margin-top:8px">Label foto mengikuti kuesioner terakhir Anda:
+      <span class="pill" style="color:var(--c-{{ q.label }})">{{ class_labels[q.label] }}</span> ({{ q.detail }}).
+      Ingin label yang baru? <a href="{{ url_for('questionnaire_page') }}">Isi kuesioner lagi</a> sebelum mengirim.</p>
+    {% else %}
+    <div class="callout warn" style="margin-top:10px"><div><b>Isi kuesioner dulu</b>Foto memerlukan label dari kuesioner. <a href="{{ url_for('questionnaire_page') }}">Isi kuesioner &rarr;</a></div></div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data" style="margin-top:12px">
+      <label class="drop" for="image">
+        {{ icon('upload') }}<b>Pilih foto atau ambil dengan kamera</b>
+        <span class="muted small" id="fname">JPG/PNG, wajah frontal, pencahayaan cukup, tanpa masker/kacamata hitam</span>
+        <input id="image" type="file" name="image" accept="image/jpeg,image/png" required>
+      </label>
+      <label class="consent" style="margin-top:14px"><input type="checkbox" name="consent" value="1" required>
+        <span>Saya setuju foto ini <b>disimpan</b> dan dipakai peneliti untuk keperluan penelitian. Saya tidak dapat menghapusnya sendiri; permintaan penghapusan lewat admin.</span></label>
+      <button class="btn" type="submit" {{ 'disabled' if not q }}>Kirim foto</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Foto yang sudah dikirim</h2>
+    {% if items %}
+    <table class="rt"><thead><tr><th>Waktu</th><th>Label</th><th>Status</th><th></th></tr></thead><tbody>
+      {% for s in items %}<tr><td data-label="Waktu">{{ s.time.replace('T', ' ') }}</td><td data-label="Label">{{ class_labels[s.label] }}</td>
+        <td data-label="Status"><span class="pill {{ 'ok' if s.status == 'dipakai' }}">{{ 'Dipakai peneliti' if s.status == 'dipakai' else 'Menunggu tinjauan' }}</span></td>
+        <td><a href="{{ url_for('hasil_kiriman', sid=s.id) }}">Lihat hasil</a></td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted" style="margin:8px 0 0">Belum ada foto terkirim.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+  const f = document.getElementById("image");
+  f.onchange = () => { if (f.files[0]) document.getElementById("fname").textContent = f.files[0].name; };
+</script>{% endblock %}

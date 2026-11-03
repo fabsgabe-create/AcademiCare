@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Pengumuman - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Pengumuman</h1><p>Panduan dan informasi penting sebelum memakai aplikasi.</p></div></div>{% endblock %}
+{% block content %}
+<div class="grid">
+  {% for a in announcements %}
+  <article class="card"><span class="pill brand">{{ a.tag }}</span>
+    <h2 style="margin-top:10px">{{ a.title }}</h2><p class="muted" style="margin:0">{{ a.text }}</p></article>
+  {% endfor %}
+</div>
+{% endblock %}

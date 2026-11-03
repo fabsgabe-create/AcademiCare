@@ -1,0 +1,26 @@
+{# Formulir login. Variabel: error, username, next #}
+{% from "_icons.html" import icon %}
+<form method="post" action="{{ url_for('login') }}" autocomplete="on" novalidate>
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+  <label class="lab" for="u">Username</label>
+  <span class="ig"><span class="gi">{{ icon('user') }}</span>
+    <input id="u" name="username" value="{{ username or '' }}" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64" placeholder="Masukkan username"></span>
+  <span class="labrow"><label class="lab" for="pw">Password</label><a href="{{ url_for('kontak') }}#lupa-password">Lupa Password?</a></span>
+  <span class="ig"><span class="gi">{{ icon('lock') }}</span>
+    <input id="pw" name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Masukkan password">
+    <button type="button" class="eyebtn" id="pw-toggle" aria-controls="pw" aria-label="Tampilkan password">{{ icon('eye') }}</button></span>
+  <button class="btn block go-btn" type="submit">Masuk Sekarang {{ icon('arrow') }}</button>
+  <p class="small ctr reg">Mahasiswa belum punya akun? <a href="{{ url_for('daftar') }}"><b>Daftar di sini</b></a></p>
+</form>
+<script>
+  (function () {
+    var b = document.getElementById("pw-toggle"), i = document.getElementById("pw");
+    if (!b) return;
+    b.onclick = function () {
+      var show = i.type === "password"; i.type = show ? "text" : "password";
+      b.setAttribute("aria-label", show ? "Sembunyikan password" : "Tampilkan password");
+      b.classList.toggle("on", show);
+    };
+  })();
+</script>

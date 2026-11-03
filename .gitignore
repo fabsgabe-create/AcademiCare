@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# Data responden = data pribadi: JANGAN di-commit
+data/raw/*/*
+!data/raw/*/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/questionnaire/*
+!data/questionnaire/.gitkeep
+data/demo_raw/
+models/*.joblib
+reports/*
+!reports/.gitkeep
+data/users.json
+data/.secret_key
+data/test/*/*
+!data/test/*/.gitkeep
+data/history/
+data/submissions/

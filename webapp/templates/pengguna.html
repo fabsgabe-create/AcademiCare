@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Pengguna - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Pengguna</h1><p>Akun admin dan mahasiswa. Mahasiswa mendaftar sendiri lewat halaman Daftar.</p></div></div>{% endblock %}
+{% block content %}
+{% for cat, m in msgs %}<div class="{{ 'alert' if cat == 'err' else 'callout' }}" role="status">{{ m }}</div>{% endfor %}
+<div class="card" style="overflow-x:auto">
+  <table class="rt">
+    <thead><tr><th>Nama</th><th>Username / NIM</th><th>Peran</th><th>Hasil tersimpan</th><th>Terakhir</th><th>Aksi</th></tr></thead>
+    <tbody>{% for r in rows %}
+      <tr><td data-label="Nama">{{ r.name }}</td><td data-label="Username / NIM">{{ r.username }}</td>
+        <td data-label="Peran"><span class="pill {{ 'brand' if r.role == 'admin' }}">{{ 'Admin' if r.role == 'admin' else 'Mahasiswa' }}</span></td>
+        <td data-label="Hasil tersimpan">{{ r.n if r.n is not none else '–' }}</td>
+        <td data-label="Terakhir">{% if r.last %}{{ class_labels[r.last.label] }} <span class="muted small">({{ r.last.time[:10] }})</span>{% else %}–{% endif %}</td>
+        <td data-label="Aksi">
+          <form method="post" action="{{ url_for('pengguna_password') }}" class="inline" autocomplete="off">
+            <input type="hidden" name="username" value="{{ r.username }}">
+            <input name="password" type="password" minlength="8" maxlength="128" required placeholder="Password baru" style="width:150px" autocomplete="new-password">
+            <button class="btn ghost" type="submit">Atur ulang</button></form>
+          {% if r.username != user.username %}
+          <form method="post" action="{{ url_for('pengguna_hapus') }}" class="inline" onsubmit="return confirm('Hapus akun {{ r.username }} beserta riwayatnya?')">
+            <input type="hidden" name="username" value="{{ r.username }}"><button class="btn ghost" type="submit">Hapus</button></form>
+          {% endif %}
+        </td></tr>
+    {% endfor %}</tbody>
+  </table>
+</div>
+<p class="muted small">Akun admin tambahan dibuat lewat terminal: <code>python main.py create-user NAMA --role admin</code>.</p>
+{% endblock %}

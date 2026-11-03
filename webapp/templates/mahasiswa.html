@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Beranda Mahasiswa - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Halo, {{ user.name }}</h1><p>NIM {{ user.username }} &middot; Isi kuesioner, coba prediksi wajah, dan lihat riwayat hasil Anda.</p></div>
+  {% if model_ready %}<span class="pill ok"><i class="dot"></i>Model siap</span>{% else %}<span class="pill warn"><i class="dot"></i>Model belum dilatih</span>{% endif %}</div>{% endblock %}
+{% block content %}
+<div class="grid g4">
+  <a class="card svc" href="{{ url_for('questionnaire_page') }}" style="text-decoration:none;color:inherit">
+    <h2>{{ icon('clip') }} Kuesioner Stres</h2>
+    <p class="muted small">14 butir, skala 0-3, berdasarkan satu minggu terakhir. Hasil langsung muncul.</p>
+    <span class="btn">Isi kuesioner &rarr;</span>
+  </a>
+  <a class="card svc" href="{{ url_for('kirim') }}" style="text-decoration:none;color:inherit">
+    <h2>{{ icon('upload') }} Kirim Foto</h2>
+    <p class="muted small">Kirim foto wajah untuk penelitian setelah mengisi kuesioner. {{ n_sub }} foto terkirim.</p>
+    <span class="btn">Kirim foto &rarr;</span>
+  </a>
+  <a class="card svc" href="{{ url_for('predict_page') }}" style="text-decoration:none;color:inherit">
+    <h2>{{ icon('eye') }} Prediksi Wajah</h2>
+    <p class="muted small">Unggah foto atau pakai webcam. Foto tidak disimpan di menu ini.</p>
+    <span class="btn">Coba prediksi &rarr;</span>
+  </a>
+  <a class="card svc" href="{{ url_for('riwayat') }}" style="text-decoration:none;color:inherit">
+    <h2>{{ icon('bell') }} Riwayat</h2>
+    <p class="muted small">{{ n_hist }} hasil tersimpan pada akun ini.</p>
+    <span class="btn ghost">Lihat riwayat &rarr;</span>
+  </a>
+</div>
+
+<div class="grid" style="margin-top:18px">
+  <div class="card"><h2>Kuesioner terakhir</h2>
+    {% if last_q %}<div class="result" style="--cc:var(--c-{{ last_q.label }})"><div class="big">{{ class_labels[last_q.label] }}</div>
+      <div class="muted">{{ last_q.detail }} &middot; {{ last_q.time.replace('T', ' ') }}</div></div>
+    {% else %}<p class="muted">Belum ada. Mulai dengan mengisi kuesioner.</p>{% endif %}</div>
+  <div class="card"><h2>Prediksi wajah terakhir</h2>
+    {% if last_face %}<div class="result" style="--cc:var(--c-{{ last_face.label }})"><div class="big">{{ class_labels[last_face.label] }}</div>
+      <div class="muted">{{ last_face.detail }} &middot; {{ last_face.time.replace('T', ' ') }}</div></div>
+    {% else %}<p class="muted">Belum ada.</p>{% endif %}</div>
+</div>
+{% if last_sub %}<div class="card" style="margin-top:18px"><h2>Hasil deteksi foto terakhir</h2>
+  <p class="muted small" style="margin:8px 0 12px">Dikirim {{ last_sub.time.replace('T', ' ') }} &middot; label kuesioner {{ class_labels[last_sub.label] }}</p>
+  <a class="btn" href="{{ url_for('hasil_kiriman', sid=last_sub.id) }}">Lihat hasil deteksi &rarr;</a></div>{% endif %}
+<div class="callout" style="margin-top:18px"><div><b>Bukan diagnosis</b>{{ disclaimer }}</div></div>
+{% endblock %}

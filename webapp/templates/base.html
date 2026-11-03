@@ -1,0 +1,72 @@
+{% from "_icons.html" import icon %}<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ff9b32">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}AcademiCare - Deteksi Stres Akademik{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+{% set ep = request.endpoint %}{% set is_public = ep in public_pages %}
+<body class="public {{ '' if is_public else 'app' }} {{ 'nav-long' if (not is_public and user and user.role == 'admin') else '' }}">
+<header class="top">
+  <div class="wrap topbar">
+    <a class="brand" href="{{ url_for('home' if is_public else ('mahasiswa_home' if user and user.role == 'mahasiswa' else 'index')) }}">
+      <span class="mark">{{ icon('scan') }}</span>
+      <span><b>AcademiCare</b><small>{{ 'SISTEM DETEKSI STRES AKADEMIK' if is_public else 'Deteksi Stres Akademik' }}</small></span>
+    </a>
+    <button class="menubtn" id="menubtn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Buka menu">{{ icon('menu') }}</button>
+    <nav class="nav" id="nav" aria-label="Menu utama">
+    {% if is_public %}
+      <a href="{{ url_for('home') }}" class="{{ 'on' if ep == 'home' }}">{{ icon('home') }}Beranda</a>
+      <a href="{{ url_for('pengumuman') }}" class="{{ 'on' if ep == 'pengumuman' }}">{{ icon('bell') }}Pengumuman</a>
+      <a href="{{ url_for('faq') }}" class="{{ 'on' if ep == 'faq' }}">{{ icon('help') }}FAQ</a>
+      <a href="{{ url_for('kontak') }}" class="{{ 'on' if ep == 'kontak' }}">{{ icon('mail') }}Kontak</a>
+      {% if user %}<a class="cta" href="{{ dash_url }}">Dashboard</a>
+      {% else %}<a class="cta {{ 'on' if ep in ('login', 'daftar') }}" href="{{ url_for('login') }}">{{ icon('lock') }}Masuk</a>{% endif %}
+    {% elif user and user.role == 'mahasiswa' %}
+      <a href="{{ url_for('mahasiswa_home') }}" class="{{ 'on' if ep == 'mahasiswa_home' }}">{{ icon('home') }}Beranda</a>
+      <a href="{{ url_for('questionnaire_page') }}" class="{{ 'on' if ep == 'questionnaire_page' }}">{{ icon('clip') }}Kuesioner</a>
+      <a href="{{ url_for('kirim') }}" class="{{ 'on' if ep == 'kirim' }}">{{ icon('upload') }}Kirim Foto</a>
+      <a href="{{ url_for('predict_page') }}" class="{{ 'on' if ep == 'predict_page' }}">{{ icon('eye') }}Prediksi</a>
+      <a href="{{ url_for('riwayat') }}" class="{{ 'on' if ep == 'riwayat' }}">{{ icon('bell') }}Riwayat</a>
+    {% else %}
+      <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">{{ icon('home') }}Beranda</a>
+      <a href="{{ url_for('data_page') }}" class="{{ 'on' if ep == 'data_page' }}">{{ icon('database') }}Data</a>
+      <a href="{{ url_for('train_page') }}" class="{{ 'on' if ep == 'train_page' }}">{{ icon('zap') }}Latih Model</a>
+      <a href="{{ url_for('evaluation_page') }}" class="{{ 'on' if ep == 'evaluation_page' }}">{{ icon('chart') }}Evaluasi</a>
+      <a href="{{ url_for('predict_page') }}" class="{{ 'on' if ep == 'predict_page' }}">{{ icon('eye') }}Prediksi</a>
+      <a href="{{ url_for('questionnaire_page') }}" class="{{ 'on' if ep == 'questionnaire_page' }}">{{ icon('clip') }}Kuesioner</a>
+      <a href="{{ url_for('capture_page') }}" class="{{ 'on' if ep == 'capture_page' }}">{{ icon('camera') }}Kamera</a>
+      <a href="{{ url_for('data_mahasiswa') }}" class="{{ 'on' if ep in ('data_mahasiswa', 'mahasiswa_detail', 'foto_mahasiswa') }}">{{ icon('database') }}Mahasiswa</a>
+      <a href="{{ url_for('pengguna') }}" class="{{ 'on' if ep == 'pengguna' }}">{{ icon('user') }}Pengguna</a>
+    {% endif %}
+    {% if user %}<div class="usermenu"><span class="avatar" aria-hidden="true">{{ user.name[:1]|upper }}</span>
+      <span class="who"><b>{{ user.name }}</b><small>{{ 'Mahasiswa' if user.role == 'mahasiswa' else 'Admin' }}</small></span>
+      <form class="inline" method="post" action="{{ url_for('logout') }}"><button class="btn ghost sm" type="submit">Keluar</button></form></div>{% endif %}
+    </nav>
+  </div>
+</header>
+<section class="hero"><div class="wrap">{% block hero %}{% endblock %}</div></section>
+<main class="wrap">{% block content %}{% endblock %}</main>
+<footer class="foot"><div class="wrap">
+  <span><b>AcademiCare</b> &middot; Sistem analisis tingkat stres akademik berbasis citra ekspresi wajah</span>
+  <span>{{ disclaimer }}</span>
+</div></footer>
+<script>
+  (function () {
+    var b = document.getElementById("menubtn"), n = document.getElementById("nav");
+    if (!b || !n) return;
+    function set(open) { n.classList.toggle("open", open); b.setAttribute("aria-expanded", open ? "true" : "false"); }
+    b.addEventListener("click", function (e) { e.stopPropagation(); set(!n.classList.contains("open")); });
+    document.addEventListener("click", function (e) { if (!n.contains(e.target)) set(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+    window.addEventListener("resize", function () { set(false); });
+  })();
+</script>
+<div id="toasts" role="status" aria-live="polite"></div>
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

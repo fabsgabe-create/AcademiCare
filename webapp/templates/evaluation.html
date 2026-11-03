@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Evaluasi - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Evaluasi Model</h1><p>Kinerja pada data uji: confusion matrix, accuracy, precision, recall, F1-score.</p></div>
+  {% if m %}<a class="btn ghost" href="{{ url_for('reports', name='confusion_matrix.png') }}" download>Unduh confusion matrix (PNG)</a>{% endif %}</div>{% endblock %}
+{% block content %}
+{% if not m %}
+<div class="callout"><div><b>Belum ada hasil evaluasi</b>Latih model di menu <a href="{{ url_for('train_page') }}">Latih Model</a>.</div></div>
+{% else %}
+<div class="grid g3">
+  {% for lab, v in [('Accuracy', m.accuracy), ('Precision', m.precision_macro), ('Recall', m.recall_macro), ('F1-score', m.f1_macro)] %}
+  <div class="card metric"><div class="lab muted small" style="font-weight:600">{{ lab }}</div><div class="val">{{ '%.1f'|format(v * 100) }}%</div></div>
+  {% endfor %}
+</div>
+<div class="row" style="margin:14px 0 0">
+  <span class="pill brand">Latih {{ m.n_train }}</span>
+  <span class="pill brand">Uji {{ m.n_test }} ({{ 'data uji unggahan' if m.test_source == 'upload' else 'split 80/20' }})</span>
+  <span class="pill">C = {{ m.best_params.C }}</span><span class="pill">&gamma; = {{ m.best_params.gamma }}</span>
+  <span class="pill">Kernel RBF</span><span class="pill">CV {{ m.cv_folds }}-fold F1 {{ '%.1f'|format(m.cv_f1_macro * 100) }}%</span>
+</div>
+<p class="muted small" style="margin-top:8px">Precision, recall, dan F1 adalah rata-rata makro antar kelas.</p>
+
+<div class="grid" style="margin-top:6px">
+  <div class="card">
+    <h2>Confusion matrix</h2>
+    <p class="muted small">Baris = kelas aktual, kolom = prediksi. Warna menunjukkan proporsi per baris.</p>
+    <div style="overflow-x:auto">
+    <table class="cm" aria-label="Confusion matrix">
+      <tr><th></th>{% for c in m.classes %}<th>{{ class_short[c] }}</th>{% endfor %}</tr>
+      {% for row in m.confusion_matrix %}{% set i = loop.index0 %}{% set rs = row|sum %}
+      <tr><th class="rh">{{ class_short[m.classes[i]] }}</th>
+        {% for v in row %}{% set a = (v / rs) if rs else 0 %}
+        <td class="c {{ 'hi' if a > 0.55 }}" style="--a: {{ '%.2f'|format(a) }}">{{ v }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </table></div>
+  </div>
+  <div class="card">
+    <h2>Per kelas</h2>
+    <table>
+      <tr><th>Kelas</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">n</th></tr>
+      {% for c in m.classes %}{% set p = m.per_class[c] %}
+      <tr><td>{{ class_labels[c] }}</td><td class="num">{{ '%.2f'|format(p.precision) }}</td>
+        <td class="num">{{ '%.2f'|format(p.recall) }}</td><td class="num">{{ '%.2f'|format(p.f1) }}</td><td class="num">{{ p.support }}</td></tr>
+      {% endfor %}
+    </table>
+    {% if m.n_test < 40 %}<p class="callout warn" style="margin:14px 0 0"><span>Data uji hanya {{ m.n_test }} citra, sehingga angka di atas belum stabil. Tambah data uji untuk hasil yang bisa dipertanggungjawabkan.</span></p>{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

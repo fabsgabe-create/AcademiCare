@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}AcademiCare - Deteksi Stres Akademik{% endblock %}
+{% block hero %}{% endblock %}
+{% block content %}
+<div class="portal">
+  <section class="intro">
+    <span class="badge">Selamat Datang</span>
+    <h1 class="big"><span class="o">Selamat Datang di</span><br>AcademiCare</h1>
+    <p class="sub">Smart Academic Stress Analysis</p>
+    <p class="lead">AcademiCare merupakan sistem analisis tingkat stres akademik mahasiswa berbasis citra ekspresi wajah.
+      Citra wajah diproses dengan Haar Cascade untuk deteksi wajah, lalu diklasifikasikan oleh Support Vector Machine ke dalam
+      empat tingkat: normal, ringan, sedang, dan berat. Hasilnya adalah estimasi awal untuk keperluan penelitian,
+      bukan diagnosis.</p>
+    {% set stu = user and user.role == 'mahasiswa' %}
+    <div class="tiles">
+      {% if stu %}<span class="tile off"><span class="ic">{{ icon('database') }}</span><b>Data</b><small>Khusus admin/peneliti</small></span>{% else %}<a class="tile" href="{{ url_for('data_page') }}"><span class="ic">{{ icon('database') }}</span><b>Data</b><small>Unggah &amp; kelola data latih dan uji</small><span class="go">{{ icon('arrow') }}</span></a>{% endif %}
+      {% if stu %}<span class="tile off"><span class="ic">{{ icon('zap') }}</span><b>Latih Model</b><small>Khusus admin/peneliti</small></span>{% else %}<a class="tile" href="{{ url_for('train_page') }}"><span class="ic">{{ icon('zap') }}</span><b>Latih Model</b><small>Haar Cascade + SVM RBF Grid Search</small><span class="go">{{ icon('arrow') }}</span></a>{% endif %}
+      {% if stu %}<span class="tile off"><span class="ic">{{ icon('chart') }}</span><b>Evaluasi</b><small>Khusus admin/peneliti</small></span>{% else %}<a class="tile" href="{{ url_for('evaluation_page') }}"><span class="ic">{{ icon('chart') }}</span><b>Evaluasi</b><small>Confusion matrix &amp; F1-score</small><span class="go">{{ icon('arrow') }}</span></a>{% endif %}
+      <a class="tile" href="{{ url_for('predict_page') if user else url_for('login') }}"><span class="ic">{{ icon('eye') }}</span><b>Prediksi</b><small>Dari citra atau webcam real-time</small><span class="go">{{ icon('arrow') }}</span></a>
+    </div>
+    <p class="muted small privacy">{{ icon('lock') }} Seluruh layanan memerlukan login karena memproses citra wajah, yang merupakan data pribadi.</p>
+  </section>
+
+  <aside class="loginbox">
+    <div class="logincard">
+      <span class="seal">{{ icon('scan') }}</span>
+      <h2>Masuk ke Akun Anda</h2>
+      {% if setup_needed %}
+        <p class="muted small ctr">Belum ada akun. Buat akun administrator pertama untuk mulai memakai aplikasi.</p>
+        {% if can_setup %}
+          <a class="btn block go-btn" href="{{ url_for('setup') }}">Buat Akun Pertama {{ icon('arrow') }}</a>
+        {% else %}
+          <div class="callout warn" style="margin:0"><div><b>Buat akun dari server</b>Jalankan <code>python main.py create-user NAMA</code> di komputer tempat aplikasi berjalan.</div></div>
+        {% endif %}
+      {% elif user %}
+        <p class="muted small ctr">Anda masuk sebagai <b>{{ user.name }}</b>.</p>
+        <a class="btn block go-btn" href="{{ dash_url }}">Buka Dashboard {{ icon('arrow') }}</a>
+        <form method="post" action="{{ url_for('logout') }}" style="margin-top:10px">
+          <button class="btn ghost block" type="submit">Keluar</button></form>
+      {% else %}
+        <p class="muted small ctr">Silakan login menggunakan username dan password yang terdaftar untuk masuk ke aplikasi.</p>
+        {% include "_login_form.html" %}
+      {% endif %}
+      <a class="helpcard" href="{{ url_for('kontak') }}">
+        <span class="hic">{{ icon('headset') }}</span>
+        <span><small>Ada kendala login?</small><b>Hubungi Pengelola</b></span>
+        <span class="chev">{{ icon('chev') }}</span>
+      </a>
+      <div class="cardfoot"><span class="ver"><i></i>Versi 1.0</span><a href="{{ url_for('faq') }}">Bantuan &amp; FAQ</a></div>
+    </div>
+  </aside>
+</div>
+{% block below %}
+<div class="grid below">
+  <section class="card">
+    <div class="row between"><h2>{{ icon('bell') }} Pengumuman</h2><a class="small" href="{{ url_for('pengumuman') }}">Lihat semua &rarr;</a></div>
+    {% for a in announcements %}
+    <div class="note"><span class="pill brand">{{ a.tag }}</span><b>{{ a.title }}</b><p class="muted small">{{ a.text }}</p></div>
+    {% endfor %}
+  </section>
+  <section class="card">
+    <div class="row between"><h2>{{ icon('help') }} FAQ Populer</h2><a class="small" href="{{ url_for('faq') }}">Lihat semua &rarr;</a></div>
+    {% for f in faq[:4] %}
+    <details style="margin-top:10px"><summary>{{ f.q }}</summary><p class="muted small" style="margin:8px 0 0">{{ f.a }}</p></details>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}
+{% endblock %}

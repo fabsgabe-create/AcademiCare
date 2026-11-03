@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}FAQ - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Pertanyaan yang Sering Diajukan</h1><p>Jawaban singkat seputar penggunaan aplikasi.</p></div></div>{% endblock %}
+{% block content %}
+<div class="card" style="max-width:860px">
+  {% for f in faq %}
+  <details {{ 'open' if loop.first }} style="{{ 'margin-top:10px' if not loop.first }}"><summary>{{ f.q }}</summary><p class="muted" style="margin:8px 0 0">{{ f.a }}</p></details>
+  {% endfor %}
+</div>
+{% endblock %}

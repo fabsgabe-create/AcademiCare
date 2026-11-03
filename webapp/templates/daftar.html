@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Daftar Mahasiswa - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Daftar Akun Mahasiswa</h1><p>Gunakan NIM sebagai username untuk mengisi kuesioner dan mencoba prediksi.</p></div></div>{% endblock %}
+{% block content %}
+<div class="card login solo">
+  <h2>Akun mahasiswa</h2>
+  {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" autocomplete="off">
+    <label class="field">Nama lengkap
+      <input name="name" value="{{ form.name or '' }}" required maxlength="60" autocomplete="name"></label>
+    <label class="field">NIM (dipakai sebagai username)
+      <input name="nim" value="{{ form.nim or '' }}" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_\-]{3,32}"
+        autocapitalize="none" spellcheck="false" inputmode="text" placeholder="mis. 251321036"></label>
+    <label class="field">Password
+      <input name="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Minimal 8 karakter"></label>
+    <label class="field">Ulangi password
+      <input name="password2" type="password" required minlength="8" maxlength="128" autocomplete="new-password"></label>
+    <label class="consent"><input type="checkbox" name="consent" value="1" required>
+      <span>Saya setuju hasil kuesioner dan prediksi saya disimpan pada akun ini dan dapat dilihat peneliti (admin) untuk keperluan penelitian. Foto wajah baru disimpan bila saya sendiri memilih menu <b>Kirim Foto</b>.</span></label>
+    <button class="btn block" type="submit">Daftar &amp; Masuk</button>
+  </form>
+  <p class="small ctr reg" style="margin-top:16px">Sudah punya akun? <a href="{{ url_for('login') }}"><b>Masuk</b></a></p>
+</div>
+{% endblock %}

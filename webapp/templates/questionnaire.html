@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Kuesioner - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Kuesioner Stres</h1>
+  <p>Ground truth untuk label kelas. Skala 0&ndash;3, berdasarkan <b>satu minggu terakhir</b>.</p></div></div>{% endblock %}
+{% block content %}
+{% if user.role == 'admin' %}<div class="callout"><div><b>Teks butir adalah template</b>Ganti dengan instrumen baku/tervalidasi (mis. DASS-42 versi Indonesia berizin) di <code>stressfer/questionnaire.py</code> sebelum pengambilan data penelitian.</div></div>{% endif %}
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+{% if summary %}
+<div class="card" style="margin-bottom:18px">
+  <div class="result" style="--cc:var(--c-{{ summary.label }});margin:0">
+    <div class="big">{{ summary.label_text }}</div>
+    <div class="muted">Responden <b>{{ summary.subject_id }}</b> &middot; skor {{ summary.total }} dari {{ max_score }}</div>
+  </div>
+  {% if user.role == 'mahasiswa' %}
+  <p class="muted small" style="margin-top:12px">Hasil tersimpan di <a href="{{ url_for('riwayat') }}">Riwayat</a>. Ini adalah skrining awal, bukan diagnosis. Bila Anda merasa tertekan, hubungi psikolog atau layanan konseling kampus.</p>
+  {% else %}
+  <div class="row" style="margin-top:14px">
+    <a class="btn" href="{{ url_for('capture_page', subject=summary.subject_id, label=summary.label) }}">Lanjut ambil citra wajah &rarr;</a>
+    <a class="btn ghost" href="{{ url_for('data_page') }}">Atau unggah citra</a>
+  </div>{% endif %}
+</div>
+{% endif %}
+
+<form method="post" class="card">
+  {% if user.role == 'admin' %}<label class="field" style="max-width:320px">ID responden (anonim)
+    <input name="subject_id" maxlength="32" pattern="[A-Za-z0-9_-]{1,32}" placeholder="mis. R001" required autocomplete="off"></label>
+  {% else %}<p class="muted small" style="margin-top:0">Jawaban dicatat atas NIM Anda (<b>{{ user.username }}</b>).</p>{% endif %}
+  <p class="muted small">{% for k, v in likert.items() %}<b>{{ k }}</b> = {{ v }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
+  {% for item in items %}{% set n = loop.index %}
+  <fieldset class="q"><legend>{{ n }}. {{ item }}</legend>
+    <div class="seg" role="radiogroup">
+      {% for v in range(4) %}<label><input type="radio" name="q{{ n }}" value="{{ v }}" required><span>{{ v }}</span></label>{% endfor %}
+    </div>
+  </fieldset>
+  {% endfor %}
+  <div class="sticky-bar"><span class="muted small" id="answered">0 dari {{ items|length }} terjawab</span>
+    <button class="btn" type="submit">Hitung skor</button></div>
+</form>
+{% endblock %}
+{% block scripts %}<script>
+  const total = {{ items|length }}, el = document.getElementById("answered");
+  const upd = () => { const n = new Set([...document.querySelectorAll('.q input:checked')].map(i => i.name)).size; el.textContent = `${n} dari ${total} terjawab`; };
+  document.querySelectorAll('.q input').forEach(i => i.addEventListener('change', upd));
+</script>{% endblock %}

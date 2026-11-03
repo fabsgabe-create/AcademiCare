@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Prediksi - AcademiCare{% endblock %}
+{% block hero %}<div class="head"><div><h1>Prediksi</h1><p>Unggah satu citra wajah atau gunakan webcam real-time.</p></div></div>{% endblock %}
+{% block content %}
+{% if not model_ready %}
+<div class="callout warn"><div><b>Model belum dilatih</b>{% if user.role == 'admin' %}Latih dulu di menu <a href="{{ url_for('train_page') }}">Latih Model</a>.{% else %}Peneliti belum melatih model. Coba lagi nanti.{% endif %}</div></div>
+{% endif %}
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+<div class="grid">
+  <div class="card">
+    <h2>Unggah citra</h2>
+    <form method="post" enctype="multipart/form-data" id="form">
+      <label class="drop" id="drop" for="image">
+        {{ icon('upload') }}<b>Tarik &amp; lepas atau klik untuk memilih</b>
+        <span class="muted small" id="fname">JPG/PNG, wajah frontal dengan pencahayaan memadai</span>
+        <input id="image" type="file" name="image" accept="image/jpeg,image/png" required>
+      </label>
+      <div class="row" style="margin-top:14px"><button class="btn" type="submit" {{ 'disabled' if not model_ready }}>Analisis</button></div>
+    </form>
+
+    {% if result %}
+      {% if result.face_found %}
+        <div class="result" style="--cc:var(--c-{{ result.label }})">
+          <div class="big">{{ result.label_text }}</div>
+          <div class="muted">Keyakinan {{ '%.1f'|format(result.confidence * 100) }}%</div>
+          <p style="margin:8px 0 0">{{ result.description }}</p>
+        </div>
+        {% for c in classes %}
+        <div class="bar-row"><span>{{ class_labels[c] }}</span>
+          <div class="bar"><i class="bg-{{ c }}" style="width: {{ result.probabilities[c] * 100 }}%"></i></div>
+          <span class="num">{{ '%.1f'|format(result.probabilities[c] * 100) }}%</span></div>
+        {% endfor %}
+        <p class="muted small" style="margin-top:12px">Ini estimasi dari model dan bukan diagnosis.{% if user.role == 'mahasiswa' %} Hasil (tanpa foto) disimpan di <a href="{{ url_for('riwayat') }}">Riwayat</a>; foto Anda tidak disimpan.{% endif %}</p>
+      {% else %}
+        <div class="alert" style="margin-top:16px">Wajah tidak terdeteksi. Gunakan citra frontal dengan pencahayaan yang baik.</div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="card">
+    {% if annotated %}
+      <h2>Hasil deteksi</h2>
+      <img class="preview" src="{{ annotated }}" alt="Citra dengan kotak wajah dan label" style="margin-top:12px">
+      <div class="row" style="margin-top:14px"><a class="btn ghost" href="{{ url_for('predict_page') }}">Analisis citra lain</a></div>
+    {% else %}
+      <h2>Webcam real-time</h2>
+      <div class="cam-wrap" style="margin-top:12px">
+        <video id="video" class="preview" autoplay playsinline muted></video>
+        <div class="cam-off" id="camoff">Kamera belum aktif</div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button id="start" class="btn" type="button" {{ 'disabled' if not model_ready }}>Mulai kamera</button>
+        <button id="stop" class="btn ghost" type="button" disabled>Berhenti</button>
+        {% if user.role == 'mahasiswa' %}<button id="save" class="btn ghost" type="button" disabled>Simpan hasil ke riwayat</button>{% endif %}
+      </div>
+      <div class="result" id="live" style="--cc:var(--line)"><div class="muted">Hasil muncul di sini.</div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const img = document.getElementById("image"), drop = document.getElementById("drop");
+  img.onchange = () => { if (img.files[0]) document.getElementById("fname").textContent = img.files[0].name; };
+  ["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", ev => { if (ev.dataTransfer.files.length) { img.files = ev.dataTransfer.files; img.onchange(); } });
+</script>
+{% if not annotated %}<script src="{{ url_for('static', filename='js/live.js') }}"></script>{% endif %}
+{% endblock %}

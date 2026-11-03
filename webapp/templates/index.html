@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, stack %}
+{% block hero %}
+<div class="head">
+  <div>
+    <h1>Deteksi Tingkat Stres Akademik</h1>
+    <p>Analisis ekspresi wajah mahasiswa: Haar Cascade untuk deteksi wajah, SVM untuk klasifikasi 4 tingkat stres.</p>
+  </div>
+  {% if model_ready %}<span class="pill ok"><i class="dot"></i>Model siap</span>
+  {% else %}<span class="pill warn"><i class="dot"></i>Model belum dilatih</span>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% if n_new_subs %}<div class="callout"><div><b>{{ n_new_subs }} foto baru dari mahasiswa</b>Tinjau di <a href="{{ url_for('data_mahasiswa') }}">Data Mahasiswa</a> lalu masukkan ke data latih atau uji.</div></div>{% endif %}
+<div class="card next">
+  <h2>Langkah berikutnya: {{ nxt.title }}</h2>
+  <p>{{ nxt.text }}</p>
+  <a class="btn" href="{{ nxt.href }}">{{ nxt.title }} &rarr;</a>
+</div>
+
+<div class="grid g3" style="margin-top:18px">
+  <div class="card stat">
+    <div class="lab">Data latih</div>
+    <div class="val">{{ n_train }}</div>
+    {% if n_train %}{{ stack(counts.train, classes) }}{% else %}<div class="sub">Belum ada citra.</div>{% endif %}
+  </div>
+  <div class="card stat">
+    <div class="lab">Data uji</div>
+    <div class="val">{{ n_test }}</div>
+    {% if n_test %}{{ stack(counts.test, classes) }}
+    {% else %}<div class="sub">Opsional. Tanpa data uji, data latih dibagi 80/20 otomatis.</div>{% endif %}
+  </div>
+  <div class="card stat">
+    <div class="lab">Akurasi (data uji)</div>
+    <div class="val">{% if metrics %}{{ '%.1f'|format(metrics.accuracy * 100) }}%{% else %}&ndash;{% endif %}</div>
+    <div class="sub">{% if metrics %}F1 macro {{ '%.1f'|format(metrics.f1_macro * 100) }}% &middot; {{ metrics.n_test }} citra uji{% else %}Muncul setelah pelatihan.{% endif %}</div>
+  </div>
+</div>
+
+<div class="section-title">Layanan Utama</div>
+<div class="grid g3">
+  <a class="svc" href="{{ url_for('data_page') }}">
+    <span class="step">Langkah 1</span><span class="ic">{{ icon('database') }}</span>
+    <b>Data</b><span class="d">Unggah citra atau ZIP per kelas sebagai data latih dan data uji, atau ambil lewat kamera.</span>
+    <span class="st"><span class="pill {{ 'ok' if n_train else '' }}">{{ n_train + n_test }} citra</span></span>
+  </a>
+  <a class="svc" href="{{ url_for('train_page') }}">
+    <span class="step">Langkah 2</span><span class="ic">{{ icon('zap') }}</span>
+    <b>Latih Model</b><span class="d">Grayscale, resize 100&times;100, Gaussian Blur, Haar Cascade, flattening, lalu SVM RBF dengan Grid Search 5-fold.</span>
+    <span class="st"><span class="pill {{ 'ok' if model_ready else 'warn' }}">{{ 'Model siap' if model_ready else 'Belum dilatih' }}</span></span>
+  </a>
+  <a class="svc" href="{{ url_for('evaluation_page') }}">
+    <span class="step">Langkah 3</span><span class="ic">{{ icon('chart') }}</span>
+    <b>Evaluasi</b><span class="d">Confusion matrix, accuracy, precision, recall, dan F1-score pada data uji.</span>
+    <span class="st"><span class="pill {{ 'ok' if metrics else '' }}">{% if metrics %}Akurasi {{ '%.1f'|format(metrics.accuracy * 100) }}%{% else %}Belum ada hasil{% endif %}</span></span>
+  </a>
+  <a class="svc" href="{{ url_for('predict_page') }}">
+    <span class="step">Gunakan</span><span class="ic">{{ icon('eye') }}</span>
+    <b>Prediksi</b><span class="d">Unggah satu citra wajah atau nyalakan webcam untuk klasifikasi real-time.</span>
+  </a>
+  <a class="svc" href="{{ url_for('questionnaire_page') }}">
+    <span class="step">Pendukung</span><span class="ic">{{ icon('clip') }}</span>
+    <b>Kuesioner</b><span class="d">Skor kuesioner sebagai ground truth untuk menentukan label kelas tiap responden.</span>
+  </a>
+  <a class="svc" href="{{ url_for('capture_page') }}">
+    <span class="step">Pendukung</span><span class="ic">{{ icon('camera') }}</span>
+    <b>Kamera</b><span class="d">Ambil citra wajah langsung dari webcam dengan persetujuan responden.</span>
+  </a>
+</div>
+{% endblock %}
